@@ -20,6 +20,7 @@ from weatherbenchX.metrics import base
 import xarray as xr
 from skimage.metrics import structural_similarity as ssim
 
+
 ### Statistics
 
 
@@ -193,10 +194,11 @@ class AnomalyCovariance(base.PerVariableStatisticWithClimatology):
     target_anom = targets - aligned_climatology
     return prediction_anom * target_anom
 
+
 class SSIM(base.PerVariableStatistic):
   """Squared error between predictions and targets."""
 
-  def compute_per_variable(
+  def _compute_per_variable(
       self,
       predictions: xr.DataArray,
       targets: xr.DataArray,
