@@ -207,7 +207,7 @@ class SSIM(base.PerVariableStatistic):
     data_range = targets.max() - targets.min()
 
     ssim_result = ssim(targets, predictions, data_range=data_range.values, full=True)
-    return xr.DataArray(ssim_result[1], dims=['latitude', 'longitude'])
+    return xr.DataArray(ssim_result[1], dims=['init_time','latitude', 'longitude'])
 
 
 ### Metrics
