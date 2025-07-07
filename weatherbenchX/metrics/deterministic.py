@@ -18,7 +18,7 @@ import numpy as np
 from weatherbenchX import xarray_tree
 from weatherbenchX.metrics import base
 import xarray as xr
-
+from skimage.metrics import structural_similarity as ssim
 
 ### Statistics
 
@@ -192,6 +192,20 @@ class AnomalyCovariance(base.PerVariableStatisticWithClimatology):
     prediction_anom = predictions - aligned_climatology
     target_anom = targets - aligned_climatology
     return prediction_anom * target_anom
+
+class SSIM(base.PerVariableStatistic):
+  """Squared error between predictions and targets."""
+
+  def compute_per_variable(
+      self,
+      predictions: xr.DataArray,
+      targets: xr.DataArray,
+  ) -> xr.DataArray:
+
+    data_range = targets.max() - targets.min()
+
+    ssim_result = ssim(targets, predictions, data_range=data_range.values, full=True)
+    return xr.DataArray(ssim_result[1], dims=['latitude', 'longitude'])
 
 
 ### Metrics
@@ -413,3 +427,18 @@ class PredictionActivity(base.PerVariableMetric):
   ) -> xr.DataArray:
     """Computes metrics from aggregated statistics."""
     return np.sqrt(statistic_values['SquaredPredictionAnomaly'])
+
+
+class SpatialSSIM(base.PerVariableMetric):
+  """Mean SSIM."""
+
+  @property
+  def statistics(self) -> Mapping[Hashable, base.Statistic]:
+    return {'SSIM': SSIM()}
+
+  def _values_from_mean_statistics_per_variable(
+      self,
+      statistic_values: Mapping[Hashable, xr.DataArray],
+  ) -> xr.DataArray:
+    """Computes metrics from aggregated statistics."""
+    return statistic_values['SSIM']
